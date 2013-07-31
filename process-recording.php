@@ -12,7 +12,7 @@ $response = "<Response>\n";
 if($RecordingUrl == ""){
     $response .= "<Say>Record your name now</Say>";
     $response .= "<Record action='./process-recording.php?PIN=$PIN' maxLength='5' timeout='2' />";
-    $response .= "<Redirect>./process-pin.php</Redirect>";
+    $response .= "<Redirect>./welcome.php</Redirect>";
 } else {
 	// Connect the user to the room
 	$PIN = $_GET['PIN'];

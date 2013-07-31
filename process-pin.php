@@ -37,14 +37,10 @@ if(strlen($PIN)==6){
 	} else {
 		// incorrect PIN
 		$response .= "<Say>You have entered an invalid pin, please try again.</Say>";
+		$response .= "<Redirect>./welcome.php</Redirect>";
 	}
-} 
-if(!$validPIN) {
-	// Default: Request user to enter PIN
-	$response .= "<Gather method='GET' numDigits='6'>\n";
-	$response .= "<Say>Please enter your 6-digit pin</Say>\n";
-	$response .= "</Gather>";
-	$response .= "<Redirect>#</Redirect>";
+} else {
+	$response .= "<Redirect>./welcome.php</Redirect>";
 }
 
 $response .= "</Response>";
