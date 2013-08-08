@@ -9,38 +9,38 @@ $PIN = $_GET['PIN'];
 
 $response = "<Response>\n";
 
-if($RecordingUrl == ""){
-    $response .= "<Say>Record your name now</Say>";
+if( !isset( $_REQUEST['RecordingUrl'] ) ){
+    $response .= "<Say language='en-gb'>Record your name now</Say>";
     $response .= "<Record action='./process-recording.php?PIN=$PIN' maxLength='5' timeout='2' />";
-    $response .= "<Redirect>./welcome.php</Redirect>";
+    $response .= "<Redirect>./process-recording.php?PIN=$PIN&amp;RecordingUrl=''</Redirect>";
 } else {
 	// Connect the user to the room
 	$PIN = $_GET['PIN'];
-	$response .= "<Say>Now entering.</Say>";
-	$response .= "<Dial><Conference beep='false'>$PIN</Conference></Dial>";
+	$response .= "<Say language='en-gb'>Now entering.</Say>";
+	$response .= "<Dial action='$host/call-end.php?PIN=$PIN&amp;RecordingUrl=" . urlencode($RecordingUrl) . "'><Conference beep='false' waitUrl=''>$PIN</Conference></Dial>";
 
     // Initiate a call for the announcer
     $To = $_REQUEST['To'];
 
-    $call = $client->account->calls->create($To, $To, "$host/announce.php?RecordingUrl=" . urlencode($RecordingUrl), array(
-        "SendDigits" => "w$PIN"
-        ));
-    
-	// // Get the list of participants, announce the new entry
-	// foreach ($client->account->conferences->getIterator(0, 50, array(
- //        "Status" => "in-progress",
- //    	"FriendlyName" => $PIN
- //    )) as $conference ) {
- //    	// Redirect each participant to hear the entering message
- //    	foreach ($conference->participants as $participant) {
- //    		// 
- //    	    $call = $client->account->calls->get($participant->call_sid);
- //    	    $call->update(array(
- //    	    	"Url"=>"/entry.php?RecordingUrl=" . urlencode($RecordingUrl) . "&PIN=$PIN"
- //    	    ));
+    // Choose whether to announce that they are the first or play the recording to others
+    $announceUrl = "$host/announce-first.php"; // The default announcement
+    foreach (
+        $client->account->conferences->getIterator(
+            0, 1, array(
+                "Status" => "in-progress",
+       	        "FriendlyName" => $PIN
+            )
+        ) as $conference
+    ) {
+        if( count( $conference->participants ) > 0 )
+            $announceUrl = "$host/announce.php?RecordingUrl=" . urlencode($RecordingUrl); // The updated announcement
+    }
 
- //    	}
-	// }
+    // Start the announcement call
+    $call = $client->account->calls->create($To, $To, $announceUrl, array(
+        "SendDigits" => "$PIN"
+        ));
+
 }
 
 $response .="</Response>";

@@ -28,21 +28,21 @@ if(strlen($PIN)==6){
 	if( $validPIN ){
 		// Announcers do not record their name
 		if($_REQUEST['To']==$_REQUEST['From']){
-			$response .= "<Dial><Conference>$PIN</Conference></Dial>";
+			$response .= "<Dial><Conference beep='true'>$PIN</Conference></Dial>";
 		} else {
-			$response .= "<Say>PIN accepted.</Say>";
+			$response .= "<Say language='en-gb'>PIN accepted.</Say>";
 			$response .= "<Redirect>./process-recording.php?PIN=$PIN</Redirect>";
 		}
 		// Join the room
 	} else {
 		// incorrect PIN
-		$response .= "<Say>You have entered an invalid pin, please try again.</Say>";
+		$response .= "<Say language='en-gb'>You have entered an invalid pin, please try again.</Say>";
 		$response .= "<Redirect>./welcome.php</Redirect>";
 	}
 } else {
+	$response .= "<Say language='en-gb'>You have entered an invalid pin, please try again.</Say>";
 	$response .= "<Redirect>./welcome.php</Redirect>";
 }
-
 $response .= "</Response>";
 print $response;
 
