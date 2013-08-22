@@ -1,6 +1,6 @@
 <?php
 $UID=$_GET['uid'];
-echo $UID;
+// echo $UID;
 
 // Connect to database
 require_once('config.php');
@@ -11,7 +11,6 @@ if (!$link) {
 
 // Update the database
 if($_POST){
-	echo "Updating";
 	$greeting = $_POST["greeting"];
 	$record_names = isset($_POST["recordNames"]) ? 1 : 0;
 	$record_call = isset($_POST["recordCall"]) ? 1 : 0;
@@ -48,9 +47,14 @@ if($result = mysqli_query($link, "SELECT * FROM users WHERE user_ID = '$UID' LIM
 			) {
 				foreach($conference->participants as $participant){
 					$call = $client->account->calls->get($participant->call_sid);
+					$recordings = "";
+					foreach($call->recordings as $recording){
+						$uri = "https://api.twilio.com/2010-04-01/Accounts/$sid/Recordings/" . $recording->sid . ".mp3";
+						$recordings .= "<audio controls='controls' style=''><source id='greeting_source' src='$uri'></audio><br>";
+					};
 
 					// Date number name
-					$participants .= "<tr><td>$participant->date_created</td><td>$call->from</td><td></td></tr>";
+					$participants .= "<tr><td>$participant->date_created</td><td>$call->from</td><td>$recordings</td></tr>";
 				}
 			}
 
