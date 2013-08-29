@@ -27,6 +27,7 @@ if($result = mysqli_query($link, "SELECT * FROM users WHERE user_ID = '$UID' LIM
 			$greeting = $data["greeting"];
 			$record_names = $data["record_names"];
 			$record_call = $data["record_call"];
+			date_default_timezone_set('UTC');
 			$now = new DateTime();
 
 			$call_history = "";
@@ -37,9 +38,13 @@ if($result = mysqli_query($link, "SELECT * FROM users WHERE user_ID = '$UID' LIM
 			) {
 				$participants = count($conference->participants);
 				$startTime = new DateTime($conference->date_created);
-				$duration = date_diff($now, $startTime);
+				if($conference->status = "in-progress") $endTime = new DateTime();
+				else $endTime = new DateTime($conference->date_updated);
+
+				$duration = date_diff($endTime, $startTime);
+				$durationText = $duration->format( "%h:%I:%S" );
 				// Date Status Duration Participants Recording Transcript
-				$call_history .= "<tr><td>$conference->date_created</td><td>$conference->status</td><td>$duration->h:$duration->i:$duration->s</td><td>$participants</td><td></td><td>$conference->uri</td></tr>";
+				$call_history .= "<tr><td>$conference->date_created</td><td>$conference->status</td><td>$durationText</td><td>$participants</td><td></td><td>$conference->uri</td></tr>";
 			}
 
 			$participants = "";
@@ -134,6 +139,7 @@ if($result = mysqli_query($link, "SELECT * FROM users WHERE user_ID = '$UID' LIM
 	      <thead>
 	      	<tr>
 	      		<th>Date</th>
+	      		<th>Status</th>
 	      		<th>Duration</th>
 	      		<th>Number of Participants</th>
 	      		<th>Recording</th>
