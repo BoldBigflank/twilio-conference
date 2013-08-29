@@ -27,7 +27,8 @@ if($result = mysqli_query($link, "SELECT * FROM users WHERE user_pin = '$PIN' LI
 $response = "<Response>\n";
 // If we record the names and don't have a recording url, ask for one
 if( $record_names && !isset( $_REQUEST['RecordingUrl'] ) ){
-    $response .= "<Say language='en-gb'>Record your name now</Say>";
+    if( !isset($greeting) ) $greeting = "";
+    $response .= "<Say language='en-gb'>$greeting.  Record your name now.</Say>";
     $response .= "<Record action='./process-recording.php?PIN=$PIN' maxLength='5' timeout='2' />";
     $response .= "<Redirect>./process-recording.php?PIN=$PIN&amp;RecordingUrl=''</Redirect>";
 } else {
@@ -60,7 +61,7 @@ if( $record_names && !isset( $_REQUEST['RecordingUrl'] ) ){
     // Connect the user to the room
     $response .= "<Say language='en-gb'>Now entering.</Say>";
     if(!$announceUrl) $response .= "<Say voice='alice' language='en-GB'>You are the first person in the conference.</Say>";
-    $response .= "<Dial action='$host/call-end.php?PIN=$PIN&amp;RecordingUrl=" . urlencode($RecordingUrl) . "' record='$record_call'><Conference beep='false' waitUrl=''>$PIN</Conference></Dial>";
+    $response .= "<Dial action='$host/call-end.php?PIN=$PIN&amp;NameUrl=" . urlencode($RecordingUrl) . "' record='$record_call'><Conference beep='false' waitUrl=''>$PIN</Conference></Dial>";
 
 
 }

@@ -27,6 +27,7 @@ if($result = mysqli_query($link, "SELECT * FROM users WHERE user_ID = '$UID' LIM
 			$greeting = $data["greeting"];
 			$record_names = $data["record_names"];
 			$record_call = $data["record_call"];
+			$now = new DateTime();
 
 			$call_history = "";
 			// Loop over the list of conferences and echo a property for each one
@@ -35,8 +36,10 @@ if($result = mysqli_query($link, "SELECT * FROM users WHERE user_ID = '$UID' LIM
 			    )) as $conference
 			) {
 				$participants = count($conference->participants);
-				// Date Duration Participants Recording Transcript
-				$call_history .= "<tr><td>$conference->date_created</td><td>$conference->status</td><td>$participants</td><td></td><td>$conference->uri</td></tr>";
+				$startTime = new DateTime($conference->date_created);
+				$duration = date_diff($now, $startTime);
+				// Date Status Duration Participants Recording Transcript
+				$call_history .= "<tr><td>$conference->date_created</td><td>$conference->status</td><td>$duration->h:$duration->i:$duration->s</td><td>$participants</td><td></td><td>$conference->uri</td></tr>";
 			}
 
 			$participants = "";
