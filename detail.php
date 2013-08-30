@@ -38,7 +38,7 @@ if($result = mysqli_query($link, "SELECT * FROM users WHERE user_ID = '$UID' LIM
 			) {
 				$participants = count($conference->participants);
 				$startTime = new DateTime($conference->date_created);
-				if($conference->status = "in-progress") $endTime = new DateTime();
+				if($conference->status == "in-progress") $endTime = new DateTime();
 				else $endTime = new DateTime($conference->date_updated);
 
 				$duration = date_diff($endTime, $startTime);
