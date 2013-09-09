@@ -6,12 +6,10 @@ if (!$link) {
     die('Could not connect: ' . mysql_error());
 }
 
-if(isset($_REQUEST['NameUrl']) ) $RecordingUrl = $_REQUEST['NameUrl'];
-else $RecordingUrl="";
-if(isset($_REQUEST['PIN']) ) $PIN = $_REQUEST['PIN'];
-else $PIN="";
-
-
+$NameUrl = (isset($_REQUEST['NameUrl']) ) ? $_REQUEST['NameUrl'] : "";
+$PIN = (isset($_REQUEST['PIN']) ) ? $_REQUEST['PIN'] : "";
+$RecordingUrl = (isset($_REQUEST['RecordingUrl']) ) ? $_REQUEST['RecordingUrl'] : NULL;
+$CallSid = (isset($_REQUEST['CallSid']) ) ? $_REQUEST['CallSid'] : "";
 
 // Get the most recent conference
 foreach (
@@ -22,14 +20,15 @@ foreach (
     ) as $conference
 ) {
     // Update the participants table
-    $sql = "UPDATE participants SET conference_sid = '$conference->sid' WHERE pin='$PIN' AND conference_sid IS NULL";
+    $recording_sql = ($RecordingUrl != NULL) ? ", call_recording = '$RecordingUrl'" :"";
+    $sql = "UPDATE participants SET conference_sid = '$conference->sid' $recording_sql WHERE pin='$PIN' AND call_sid='$CallSid'";
     mysqli_query($link, $sql);
 
     // If there are other participants, Initiate a call for the announcer
     if( $conference->status == "in-progress" && count( $conference->participants ) > 0 ){
     	$To = $_REQUEST['To'];
 
-    	$call = $client->account->calls->create($To, $To, "$host/announce-end.php?RecordingUrl=" . urlencode($RecordingUrl), array(
+    	$call = $client->account->calls->create($To, $To, "$host/announce-end.php?RecordingUrl=" . urlencode($NameUrl), array(
     	    "SendDigits" => "$PIN"
     	    ));
     }

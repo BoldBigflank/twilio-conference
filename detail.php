@@ -52,8 +52,17 @@ if($result = mysqli_query($link, "SELECT * FROM users WHERE user_ID = '$UID' LIM
 
 				$duration = date_diff($endTime, $startTime);
 				$durationText = $duration->format( "%h:%I:%S" );
+
+				$participant_recordings = "";
+				$recordings_sql = "SELECT call_recording FROM participants WHERE conference_sid='$conference->sid' AND call_recording IS NOT NULL";
+				$recordings_result = mysqli_query($link, $recordings_sql);
+				while($recording = mysqli_fetch_assoc($recordings_result)){
+					$uri = $recording['call_recording'];
+					$participant_recordings .= "<audio controls='controls' style=''><source id='greeting_source' src='$uri'></audio><br>";
+				}
+				
 				// Date Status Duration Participants Recording Transcript
-				$call_history .= "<tr><td>$conference->date_created</td><td>$conference->status</td><td>$durationText</td><td>$count</td><td></td><td>$conference->uri</td></tr>";
+				$call_history .= "<tr><td>$conference->date_created</td><td>$conference->status</td><td>$durationText</td><td>$count</td><td>$participant_recordings</td><td>$conference->uri</td></tr>";
 			}
 
 			$participants = "";
@@ -66,11 +75,18 @@ if($result = mysqli_query($link, "SELECT * FROM users WHERE user_ID = '$UID' LIM
 					$call = $client->account->calls->get($participant->call_sid);
 					$recordings = "";
 					foreach($call->recordings as $recording){
+
 						$uri = "https://api.twilio.com/2010-04-01/Accounts/$sid/Recordings/" . $recording->sid . ".mp3";
-						$recordings .= "<audio controls='controls' style=''><source id='greeting_source' src='$uri'></audio><br>";
+						if($recording->duration > 0){
+							$name = "";
+							foreach($recording->transcriptions as $transcription)
+								$name = $transcription->transcription_text . "<br>";
+
+							$recordings .= "<audio controls='controls' style=''><source id='greeting_source' src='$uri'></audio><br>";
+						}
 					};
-					// Date number name
-					$participants .= "<tr><td>$participant->date_created</td><td>$call->from</td><td>$recordings</td></tr>";
+					// Date number name recording
+					$participants .= "<tr><td>$participant->date_created</td><td>$call->from</td><td>$name</td><td>$recordings</td></tr>";
 				}
 			}
 
@@ -134,6 +150,7 @@ if($result = mysqli_query($link, "SELECT * FROM users WHERE user_ID = '$UID' LIM
 	      		<th>Date</th>
 	      		<th>Participant Number</th>
 	      		<th>Participant Name</th>
+	      		<th>Participant Recording</th>
 	      	</tr>
 	      </thead>
 	      <tbody>

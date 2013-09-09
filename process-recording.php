@@ -10,7 +10,6 @@ if(isset($_REQUEST['RecordingUrl']) ) $RecordingUrl = $_REQUEST['RecordingUrl'];
 else $RecordingUrl=false;
 
 $PIN = $_GET['PIN'];
-$
 
 // Check whether we should record the user's name in the database
 if($result = mysqli_query($link, "SELECT * FROM users WHERE user_pin = '$PIN' LIMIT 1") ){
@@ -30,7 +29,7 @@ $response = "<Response>\n";
 if( $record_names && !isset( $_REQUEST['RecordingUrl'] ) ){
     if( !isset($greeting) ) $greeting = "";
     $response .= "<Say language='en-gb'>$greeting.  Record your name now.</Say>";
-    $response .= "<Record action='./process-recording.php?PIN=$PIN' maxLength='5' timeout='2' />";
+    $response .= "<Record action='./process-recording.php?PIN=$PIN' maxLength='5' timeout='2' transcribe='true' />";
     $response .= "<Redirect>./process-recording.php?PIN=$PIN&amp;RecordingUrl=''</Redirect>";
 } else {
 	$PIN = $_GET['PIN'];
@@ -69,7 +68,7 @@ if( $record_names && !isset( $_REQUEST['RecordingUrl'] ) ){
     // Update our participants table
     $CallSid = $_REQUEST['CallSid'];
     $From = $_REQUEST['From'];
-    $sql = "INSERT INTO participants (pin, call_sid, from, recording) VALUES ($PIN, $CallSid, $From, $announceUrl)";
+    $sql = "INSERT INTO participants (pin, call_sid, from, name_recording) VALUES ($PIN, $CallSid, $From, $announceUrl)";
     mysqli_query($link, $sql);
 }
 
