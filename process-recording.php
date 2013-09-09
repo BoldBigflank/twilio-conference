@@ -10,6 +10,7 @@ if(isset($_REQUEST['RecordingUrl']) ) $RecordingUrl = $_REQUEST['RecordingUrl'];
 else $RecordingUrl=false;
 
 $PIN = $_GET['PIN'];
+$
 
 // Check whether we should record the user's name in the database
 if($result = mysqli_query($link, "SELECT * FROM users WHERE user_pin = '$PIN' LIMIT 1") ){
@@ -59,11 +60,17 @@ if( $record_names && !isset( $_REQUEST['RecordingUrl'] ) ){
     }
 
     // Connect the user to the room
+    if($record_call == "true") $response .= "<Say language='en-gb'>Please note, this call is being recorded.</Say>";
     $response .= "<Say language='en-gb'>Now entering.</Say>";
     if(!$announceUrl) $response .= "<Say voice='alice' language='en-GB'>You are the first person in the conference.</Say>";
     $response .= "<Dial action='$host/call-end.php?PIN=$PIN&amp;NameUrl=" . urlencode($RecordingUrl) . "' record='$record_call'><Conference beep='false' waitUrl=''>$PIN</Conference></Dial>";
 
 
+    // Update our participants table
+    $CallSid = $_REQUEST['CallSid'];
+    $From = $_REQUEST['From'];
+    $sql = "INSERT INTO participants (pin, call_sid, from, recording) VALUES ($PIN, $CallSid, $From, $announceUrl)";
+    mysqli_query($link, $sql);
 }
 
 $response .="</Response>";

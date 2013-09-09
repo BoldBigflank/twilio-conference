@@ -28,7 +28,7 @@ if(strlen($PIN)==6){
 	if( $validPIN ){
 		// Announcers do not record their name
 		if($_REQUEST['To']==$_REQUEST['From']){
-			$response .= "<Dial><Conference beep='true'>$PIN</Conference></Dial>";
+			$response .= "<Dial record='false'><Conference beep='true'>$PIN</Conference></Dial>";
 		} else {
 			$response .= "<Say language='en-gb'>PIN accepted.</Say>";
 			$response .= "<Redirect>./process-recording.php?PIN=$PIN</Redirect>";

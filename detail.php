@@ -30,13 +30,22 @@ if($result = mysqli_query($link, "SELECT * FROM users WHERE user_ID = '$UID' LIM
 			date_default_timezone_set('UTC');
 			$now = new DateTime();
 
+			// Get participant count for each conference, put into an object
+			$participants_count = array();
+			
+			$sql = "SELECT conference_sid, count(*) as count FROM participants WHERE pin='$PIN' GROUP BY conference_sid";
+			$results = mysqli_query($link, $sql);
+			while ($result = mysqli_fetch_assoc($results)){
+				$participants_count[$result['conference_sid']] = $result['count'];
+			}
+			
 			$call_history = "";
 			// Loop over the list of conferences and echo a property for each one
 			foreach ($client->account->conferences->getIterator(0, 50, array(
 			        "FriendlyName" => $PIN
 			    )) as $conference
 			) {
-				$participants = count($conference->participants);
+				$count = $participants_count[$conference->sid] ? $participants_count[$conference->sid] : 0;
 				$startTime = new DateTime($conference->date_created);
 				if($conference->status == "in-progress") $endTime = new DateTime();
 				else $endTime = new DateTime($conference->date_updated);
@@ -44,7 +53,7 @@ if($result = mysqli_query($link, "SELECT * FROM users WHERE user_ID = '$UID' LIM
 				$duration = date_diff($endTime, $startTime);
 				$durationText = $duration->format( "%h:%I:%S" );
 				// Date Status Duration Participants Recording Transcript
-				$call_history .= "<tr><td>$conference->date_created</td><td>$conference->status</td><td>$durationText</td><td>$participants</td><td></td><td>$conference->uri</td></tr>";
+				$call_history .= "<tr><td>$conference->date_created</td><td>$conference->status</td><td>$durationText</td><td>$count</td><td></td><td>$conference->uri</td></tr>";
 			}
 
 			$participants = "";
@@ -60,7 +69,6 @@ if($result = mysqli_query($link, "SELECT * FROM users WHERE user_ID = '$UID' LIM
 						$uri = "https://api.twilio.com/2010-04-01/Accounts/$sid/Recordings/" . $recording->sid . ".mp3";
 						$recordings .= "<audio controls='controls' style=''><source id='greeting_source' src='$uri'></audio><br>";
 					};
-
 					// Date number name
 					$participants .= "<tr><td>$participant->date_created</td><td>$call->from</td><td>$recordings</td></tr>";
 				}
