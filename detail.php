@@ -34,10 +34,12 @@ if($result = mysqli_query($link, "SELECT * FROM users WHERE user_ID = '$UID' LIM
 			$participants_count = array();
 			
 			$sql = "SELECT conference_sid, count(*) as count FROM participants WHERE pin='$PIN' GROUP BY conference_sid";
-			$results = mysqli_query($link, $sql);
-			while ($result = mysqli_fetch_assoc($results)){
-				$participants_count[$result['conference_sid']] = $result['count'];
+			$sql_participants = mysqli_query($link, $sql);
+			while ($sql_participant = mysqli_fetch_assoc($sql_participants)){
+				$participants_count[$sql_participant['conference_sid']] = $sql_participant['count'];
 			}
+			mysqli_free_result($results);
+			var_dump($participants_count);
 			
 			$call_history = "";
 			// Loop over the list of conferences and echo a property for each one
@@ -45,7 +47,7 @@ if($result = mysqli_query($link, "SELECT * FROM users WHERE user_ID = '$UID' LIM
 			        "FriendlyName" => $PIN
 			    )) as $conference
 			) {
-				$count = $participants_count[$conference->sid] ? $participants_count[$conference->sid] : 0;
+				$count = isset($participants_count["$conference->sid"]) ? $participants_count["$conference->sid"] : 0;
 				$startTime = new DateTime($conference->date_created);
 				if($conference->status == "in-progress") $endTime = new DateTime();
 				else $endTime = new DateTime($conference->date_updated);
@@ -75,13 +77,20 @@ if($result = mysqli_query($link, "SELECT * FROM users WHERE user_ID = '$UID' LIM
 					$call = $client->account->calls->get($participant->call_sid);
 					$recordings = "";
 					foreach($call->recordings as $recording){
+						// Get the recording again, to avoid issues
+						$recording = $client->account->recordings->get($recording->sid);
 
 						$uri = "https://api.twilio.com/2010-04-01/Accounts/$sid/Recordings/" . $recording->sid . ".mp3";
+
 						if($recording->duration > 0){
 							$name = "";
-							foreach($recording->transcriptions as $transcription)
-								$name = $transcription->transcription_text . "<br>";
-
+							
+							if(isset($recording->transcriptions) ){
+								foreach($recording->transcriptions as $transcription){
+									var_dump($transcription);
+									$name = $transcription->transcription_text . "<br>";
+								}
+							}
 							$recordings .= "<audio controls='controls' style=''><source id='greeting_source' src='$uri'></audio><br>";
 						}
 					};
@@ -95,7 +104,7 @@ if($result = mysqli_query($link, "SELECT * FROM users WHERE user_ID = '$UID' LIM
 			echo "Data not found";
 			// Not a valid uid
 		}
-		mysqli_free_result($result);
+		// mysqli_free_result($result);
 	}
 	else {
 		echo "Query not done";

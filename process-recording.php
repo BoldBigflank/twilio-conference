@@ -21,6 +21,7 @@ if($result = mysqli_query($link, "SELECT * FROM users WHERE user_pin = '$PIN' LI
         $record_call = ($data["record_call"]) ? "true" : "false"; // This is passed in the TwiML
 
     }
+    mysqli_free_result($result);
 };
 
 
@@ -58,18 +59,18 @@ if( $record_names && !isset( $_REQUEST['RecordingUrl'] ) ){
         ));
     }
 
+    // Update our participants table
+    $CallSid = $_REQUEST['CallSid'];
+    $sql = "INSERT INTO participants (pin, call_sid, name_recording) VALUES ('$PIN', '$CallSid', '$RecordingUrl')";
+    $success = mysqli_query($link, $sql);
+    if($success) $response .= "<Say>Insert worked</Say>";
+    else $response .= "<Say>$sql</Say>";
+
     // Connect the user to the room
     if($record_call == "true") $response .= "<Say language='en-gb'>Please note, this call is being recorded.</Say>";
     $response .= "<Say language='en-gb'>Now entering.</Say>";
     if(!$announceUrl) $response .= "<Say voice='alice' language='en-GB'>You are the first person in the conference.</Say>";
     $response .= "<Dial action='$host/call-end.php?PIN=$PIN&amp;NameUrl=" . urlencode($RecordingUrl) . "' record='$record_call'><Conference beep='false' waitUrl=''>$PIN</Conference></Dial>";
-
-
-    // Update our participants table
-    $CallSid = $_REQUEST['CallSid'];
-    $From = $_REQUEST['From'];
-    $sql = "INSERT INTO participants (pin, call_sid, from, name_recording) VALUES ($PIN, $CallSid, $From, $announceUrl)";
-    mysqli_query($link, $sql);
 }
 
 $response .="</Response>";
