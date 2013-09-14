@@ -15,7 +15,8 @@ $CallSid = (isset($_REQUEST['CallSid']) ) ? $_REQUEST['CallSid'] : "";
 foreach (
     $client->account->conferences->getIterator(
         0, 1, array(
-            "FriendlyName" => $PIN
+            "FriendlyName" => $PIN,
+            "DateUpdated>" => date("Y-m-d")
         )
     ) as $conference
 ) {
