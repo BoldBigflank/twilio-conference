@@ -39,7 +39,6 @@ if($result = mysqli_query($link, "SELECT * FROM users WHERE user_ID = '$UID' LIM
 				$participants_count[$sql_participant['conference_sid']] = $sql_participant['count'];
 			}
 			mysqli_free_result($results);
-			var_dump($participants_count);
 			
 			$call_history = "";
 			// Loop over the list of conferences and echo a property for each one
@@ -55,16 +54,26 @@ if($result = mysqli_query($link, "SELECT * FROM users WHERE user_ID = '$UID' LIM
 				$duration = date_diff($endTime, $startTime);
 				$durationText = $duration->format( "%h:%I:%S" );
 
-				$participant_recordings = "";
-				$recordings_sql = "SELECT call_recording FROM participants WHERE conference_sid='$conference->sid' AND call_recording IS NOT NULL";
+				$name_recordings = "";
+
+				$call_recordings = "";
+				$recordings_sql = "SELECT call_recording, call_from, name_recording FROM participants WHERE conference_sid='$conference->sid'";
 				$recordings_result = mysqli_query($link, $recordings_sql);
 				while($recording = mysqli_fetch_assoc($recordings_result)){
-					$uri = $recording['call_recording'];
-					$participant_recordings .= "<audio controls='controls' style=''><source id='greeting_source' src='$uri'></audio><br>";
+					$name_recordings .= "<span>" . $recording['call_from'] . "</span>";
+					if($recording['name_recording'] != NULL){
+						$uri = $recording['name_recording'];
+						$name_recordings .= "<audio controls='controls' style=''><source id='greeting_source' src='$uri'></audio><br>";
+					}
+
+					if($recording['call_recording'] !== NULL){
+						$uri = $recording['call_recording'];
+						$call_recordings .= "<audio controls='controls' style=''><source id='greeting_source' src='$uri'></audio><br>";
+					}
 				}
 				
 				// Date Status Duration Participants Recording Transcript
-				$call_history .= "<tr><td>$conference->date_created</td><td>$conference->status</td><td>$durationText</td><td>$count</td><td>$participant_recordings</td><td>$conference->uri</td></tr>";
+				$call_history .= "<tr><td>$conference->date_created</td><td>$conference->status</td><td>$durationText</td><td>$count</td><td>$name_recordings</td><td>$call_recordings</td></tr>";
 			}
 
 			$participants = "";
@@ -75,6 +84,8 @@ if($result = mysqli_query($link, "SELECT * FROM users WHERE user_ID = '$UID' LIM
 			) {
 				foreach($conference->participants as $participant){
 					$call = $client->account->calls->get($participant->call_sid);
+					if( $call->to == $call->from ) continue; // Ignore announcers
+
 					$recordings = "";
 					foreach($call->recordings as $recording){
 						// Get the recording again, to avoid issues
@@ -85,12 +96,11 @@ if($result = mysqli_query($link, "SELECT * FROM users WHERE user_ID = '$UID' LIM
 						if($recording->duration > 0){
 							$name = "";
 							
-							if(isset($recording->transcriptions) ){
-								foreach($recording->transcriptions as $transcription){
-									var_dump($transcription);
-									$name = $transcription->transcription_text . "<br>";
-								}
-							}
+							// if(isset($recording->transcriptions) ){
+							// 	foreach($recording->transcriptions as $transcription){
+							// 		$name = $transcription->transcription_text . "<br>";
+							// 	}
+							// }
 							$recordings .= "<audio controls='controls' style=''><source id='greeting_source' src='$uri'></audio><br>";
 						}
 					};
@@ -176,8 +186,8 @@ if($result = mysqli_query($link, "SELECT * FROM users WHERE user_ID = '$UID' LIM
 	      		<th>Status</th>
 	      		<th>Duration</th>
 	      		<th>Number of Participants</th>
-	      		<th>Recording</th>
-	      		<th>Transcript</th>
+	      		<th>Participants</th>
+	      		<th>Recordings</th>
 	      	</tr>
 	      </thead>
 	      <tbody>

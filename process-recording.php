@@ -30,7 +30,7 @@ $response = "<Response>\n";
 if( $record_names && !isset( $_REQUEST['RecordingUrl'] ) ){
     if( !isset($greeting) ) $greeting = "";
     $response .= "<Say language='en-gb'>$greeting.  Record your name now.</Say>";
-    $response .= "<Record action='./process-recording.php?PIN=$PIN' maxLength='5' timeout='2' transcribe='true' />";
+    $response .= "<Record action='./process-recording.php?PIN=$PIN' maxLength='5' timeout='2' />";
     $response .= "<Redirect>./process-recording.php?PIN=$PIN&amp;RecordingUrl=''</Redirect>";
 } else {
 	$PIN = $_GET['PIN'];
@@ -53,7 +53,7 @@ if( $record_names && !isset( $_REQUEST['RecordingUrl'] ) ){
     }
 
     // If we have a recording and there are others, announce to them
-    if($RecordingUrl && $announceUrl !== false){
+    if($RecordingUrl != "''" && $announceUrl !== false){
         $call = $client->account->calls->create($To, $To, $announceUrl, array(
             "SendDigits" => "$PIN"
         ));
@@ -61,11 +61,10 @@ if( $record_names && !isset( $_REQUEST['RecordingUrl'] ) ){
 
     // Update our participants table
     $CallSid = $_REQUEST['CallSid'];
-    $sql = "INSERT INTO participants (pin, call_sid, name_recording) VALUES ('$PIN', '$CallSid', '$RecordingUrl')";
+    $CallFrom = $_REQUEST['From'];
+    $sql = "INSERT INTO participants (pin, call_sid, call_from, name_recording) VALUES ('$PIN', '$CallSid', '$CallFrom', '$RecordingUrl')";
     $success = mysqli_query($link, $sql);
-    if($success) $response .= "<Say>Insert worked</Say>";
-    else $response .= "<Say>$sql</Say>";
-
+    
     // Connect the user to the room
     if($record_call == "true") $response .= "<Say language='en-gb'>Please note, this call is being recorded.</Say>";
     $response .= "<Say language='en-gb'>Now entering.</Say>";
