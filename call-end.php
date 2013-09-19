@@ -19,7 +19,7 @@ foreach (
     $client->account->conferences->getIterator(
         0, 50, array(
             "FriendlyName" => $PIN,
-            "DateUpdated>" => date("Y-m-d")
+            "DateCreated>" => date("Y-m-d")
         )
     ) as $conference
 ) {
@@ -27,8 +27,9 @@ foreach (
         $most_recent_conference = $conference;
         continue;
     }
-    $date1 = new DateTime($most_recent_conference->DateUpdated);
-    $date2 = new DateTime($conference->DateUpdated);
+
+    $date1 = DateTime::createFromFormat('D, d M Y H:i:s P', $most_recent_conference->date_updated);
+    $date2 = DateTime::createFromFormat('D, d M Y H:i:s P', $conference->date_updated);
     if( $date1 < $date2 ) $most_recent_conference = $conference;
 }
 
