@@ -43,7 +43,8 @@ if($result = mysqli_query($link, "SELECT * FROM users WHERE user_ID = '$UID' LIM
 			$call_history = "";
 			// Loop over the list of conferences and echo a property for each one
 			foreach ($client->account->conferences->getIterator(0, 50, array(
-			        "FriendlyName" => $PIN
+			        "FriendlyName" => $PIN,
+			        "Status" => "completed"
 			    )) as $conference
 			) {
 				$count = isset($participants_count["$conference->sid"]) ? $participants_count["$conference->sid"] : 0;
@@ -94,18 +95,11 @@ if($result = mysqli_query($link, "SELECT * FROM users WHERE user_ID = '$UID' LIM
 						$uri = "https://api.twilio.com/2010-04-01/Accounts/$sid/Recordings/" . $recording->sid . ".mp3";
 
 						if($recording->duration > 0){
-							$name = "";
-							
-							// if(isset($recording->transcriptions) ){
-							// 	foreach($recording->transcriptions as $transcription){
-							// 		$name = $transcription->transcription_text . "<br>";
-							// 	}
-							// }
 							$recordings .= "<audio controls='controls' style=''><source id='greeting_source' src='$uri'></audio><br>";
 						}
 					};
 					// Date number name recording
-					$participants .= "<tr><td>$participant->date_created</td><td>$call->from</td><td>$name</td><td>$recordings</td></tr>";
+					$participants .= "<tr><td>$participant->date_created</td><td>$call->from</td><td>$recordings</td></tr>";
 				}
 			}
 
@@ -168,7 +162,6 @@ if($result = mysqli_query($link, "SELECT * FROM users WHERE user_ID = '$UID' LIM
 	      	<tr>
 	      		<th>Date</th>
 	      		<th>Participant Number</th>
-	      		<th>Participant Name</th>
 	      		<th>Participant Recording</th>
 	      	</tr>
 	      </thead>
