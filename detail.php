@@ -64,8 +64,9 @@ if($result = mysqli_query($link, "SELECT * FROM users WHERE user_ID = '$UID' LIM
 					$name_recordings .= "<span>" . $recording['call_from'] . "</span>";
 					if($recording['name_recording'] != NULL){
 						$uri = $recording['name_recording'];
-						$name_recordings .= "<audio controls='controls' style=''><source id='greeting_source' src='$uri'></audio><br>";
+						$name_recordings .= "<audio controls='controls' style=''><source id='greeting_source' src='$uri'></audio>";
 					}
+					$name_recordings .= "<br>";
 
 					if($recording['call_recording'] !== NULL){
 						$uri = $recording['call_recording'];
