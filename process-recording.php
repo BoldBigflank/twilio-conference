@@ -7,7 +7,7 @@ if (!$link) {
 }
 
 if(isset($_REQUEST['RecordingUrl']) ) $RecordingUrl = $_REQUEST['RecordingUrl'];
-else $RecordingUrl=false;
+else $RecordingUrl="''";
 
 $PIN = $_GET['PIN'];
 
