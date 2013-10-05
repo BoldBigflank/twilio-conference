@@ -53,7 +53,7 @@ if( $record_names && !isset( $_REQUEST['RecordingUrl'] ) ){
     }
 
     // If we have a recording and there are others, announce to them
-    if($RecordingUrl != "" && $announceUrl !== false){
+    if($announceUrl !== false){
         $call = $client->account->calls->create($To, $To, $announceUrl, array(
             "SendDigits" => "$PIN"
         ));

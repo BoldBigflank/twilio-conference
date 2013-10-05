@@ -39,7 +39,7 @@ $sql = "UPDATE participants SET conference_sid = '$most_recent_conference->sid' 
 mysqli_query($link, $sql);
 
 // If there are other participants, Initiate a call for the announcer
-if( $NameUrl != "''" && $most_recent_conference->status == "in-progress" && count( $most_recent_conference->participants ) > 0 ){
+if( $most_recent_conference->status == "in-progress" && count( $most_recent_conference->participants ) > 0 ){
     $To = $_REQUEST['To'];
 
     $call = $client->account->calls->create($To, $To, "$host/announce-end.php?RecordingUrl=" . urlencode($NameUrl), array(
